@@ -11,6 +11,8 @@ spring:
     username: sa
     password: 1111
   jpa:
+    hibernate:
+      ddl-auto: validate
     database-platform: org.hibernate.dialect.H2Dialect
     properties:
       hibernate:
