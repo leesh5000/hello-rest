@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:6.2.6-alpine
+    ports:
+      - "16379:6379"
+    networks:
+      - devcom_net
+networks:
+  devcom_net:
+    driver: bridge
