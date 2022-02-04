@@ -1,0 +1,30 @@
+// 예시
+= Devcom API Document
+:toc: left
+:toclevels: 4
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:sectlinks:
+
+ifndef::snippets[]
+:snippets: ./build/generated-snippets
+endif::[]
+
+== LOGIN\
+
+=== REQUEST
+
+include::{snippets}/login/http-request.adoc[]
+
+include::{snippets}/login/curl-request.adoc[]
+
+=== RESPONSE
+
+include::{snippets}/login/http-response.adoc[]
+
+include::{snippets}/login/response-fields.adoc[]
+
+=== HAL LINKs
+
+include::{snippets}/login/links.adoc[]
