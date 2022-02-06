@@ -1,7 +1,7 @@
 // 예시
 = Devcom API Document
 :toc: left
-:toclevels: 4
+:toclevels: 2
 :doctype: book
 :icons: font
 :source-highlighter: highlightjs
@@ -17,11 +17,21 @@ endif::[]
 
 include::{snippets}/login/http-request.adoc[]
 
+==== headers
+include::{snippets}/login/request-headers.adoc[]
+
+==== fields
+include::{snippets}/login/request-fields.adoc[]
+
+==== sample
 include::{snippets}/login/curl-request.adoc[]
 
 === RESPONSE
 
 include::{snippets}/login/http-response.adoc[]
+
+==== headers
+include::{snippets}/login/response-headers.adoc[]
 
 ==== fields
 include::{snippets}/login/response-fields.adoc[]
