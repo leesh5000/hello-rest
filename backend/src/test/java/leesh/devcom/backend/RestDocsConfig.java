@@ -5,18 +5,24 @@ import org.springframework.restdocs.operation.preprocess.OperationResponsePrepro
 
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 
-public interface ApiDocumentUtils {
+public interface RestDocsConfig {
 
     static OperationRequestPreprocessor getDocumentRequest() {
         return preprocessRequest(
                 modifyUris() // (1)
-                        .scheme("https")
-                        .host("docs.api.com")
-                        .removePort(),
+                        .scheme("http")
+                        .host("localhost")
+                        .port(18080),
+//                        .removePort(),
                 prettyPrint()); // (2)
     }
 
     static OperationResponsePreprocessor getDocumentResponse() {
-        return preprocessResponse(prettyPrint()); // (3)
+        return preprocessResponse(
+                modifyUris()
+                        .scheme("http")
+                        .host("localhost")
+                        .port(18080),
+                prettyPrint()); // (3)
     }
 }

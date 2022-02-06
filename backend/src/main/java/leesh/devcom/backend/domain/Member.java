@@ -17,10 +17,10 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    @Column(unique = true, length = 255, nullable = false)
+    @Column(unique = true, length = 100, nullable = false)
     private String email;
 
-    @Column(unique = true, length = 255, nullable = false)
+    @Column(unique = true, length = 20, nullable = false)
     private String username;
 
     @Column(unique = true, length = 255, nullable = false)
