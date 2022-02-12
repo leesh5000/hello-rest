@@ -382,7 +382,6 @@ class AuthControllerTest {
                 .andDo(print());
 
         // create docs
-        // create rest docs snippets
         actions
                 .andDo(document(String.valueOf(ErrorCode.ALREADY_EXIST_MEMBER.getCode()),
                         links(
