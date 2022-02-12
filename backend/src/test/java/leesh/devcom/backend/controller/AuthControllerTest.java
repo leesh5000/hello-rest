@@ -2,8 +2,12 @@ package leesh.devcom.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import leesh.devcom.backend.common.ServerProperty;
+import leesh.devcom.backend.domain.Member;
 import leesh.devcom.backend.dto.LoginRequest;
 import leesh.devcom.backend.dto.RegisterRequest;
+import leesh.devcom.backend.exception.CustomException;
+import leesh.devcom.backend.exception.ErrorCode;
+import leesh.devcom.backend.service.MemberService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,6 +72,9 @@ class AuthControllerTest {
 
     @Autowired
     ServerProperty serverProperty;
+
+    @Autowired
+    MemberService memberService;
 
     @BeforeEach
     void setUp(WebApplicationContext wac, RestDocumentationContextProvider restDocument) {
@@ -342,7 +349,66 @@ class AuthControllerTest {
 
     @DisplayName("register integration test - 409 conflict")
     @Test
-    void register_integration_test_409() {
+    void register_integration_test_409() throws Exception {
+        // given
+        String email = "leesh@gmail.com";
+        String username = "leesh";
+        String password = "1111";
 
+        Member member = Member.createMember(email, username, password);
+        memberService.save(member);
+
+        RegisterRequest requestDto = RegisterRequest.builder()
+                .email(email)
+                .username(username)
+                .password(password)
+                .build();
+
+        // when
+        ResultActions perform = mockMvc.perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(requestDto)));
+
+        // then
+        ResultActions actions = perform
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(status().isConflict())
+                .andExpect(res -> assertThat(Objects.requireNonNull(res.getResolvedException()).getClass()).isEqualTo(CustomException.class))
+                .andExpect(jsonPath("status").exists())
+                .andExpect(jsonPath("code").exists())
+                .andExpect(jsonPath("message").exists())
+                .andExpect(jsonPath("errors").isEmpty())
+                .andDo(print());
+
+        // create docs
+        // create rest docs snippets
+        actions
+                .andDo(document(String.valueOf(ErrorCode.ALREADY_EXIST_MEMBER.getCode()),
+                        links(
+                                halLinks(),
+                                linkWithRel("index").description("link to index"),
+                                linkWithRel("profile").description("link to document")
+                        ),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                        ),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("user email"),
+                                fieldWithPath("username").type(JsonFieldType.STRING).description("user name"),
+                                fieldWithPath("password").type(JsonFieldType.STRING).description("user password")
+                        ),
+                        responseHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                        ),
+                        responseFields(
+                                fieldWithPath("status").optional().type(JsonFieldType.STRING).description("http status"),
+                                fieldWithPath("code").type(JsonFieldType.NUMBER).description("error code"),
+                                fieldWithPath("message").type(JsonFieldType.STRING).description("error message"),
+                                fieldWithPath("errors[]").type(JsonFieldType.ARRAY).description("errors"),
+                                fieldWithPath("_links.index.href").type(JsonFieldType.STRING).description("link to index"),
+                                fieldWithPath("_links.profile.href").type(JsonFieldType.STRING).description("link to profile")
+                        )
+                ));
     }
 }

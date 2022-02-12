@@ -30,10 +30,22 @@ public class GlobalExceptionHandler {
         ErrorResponse payload = ErrorResponse.of(INVALID_INPUT_VALUE, e.getBindingResult());
 
         // hal link processing
-        EntityModel<ErrorResponse> of = EntityModel.of(payload,
+        return ResponseEntity.status(payload.getStatus()).body(halProcess(payload));
+    }
+
+    @ExceptionHandler(CustomException.class)
+    protected ResponseEntity<?> handleCustomException(CustomException e) {
+        log.error("handleCustomException", e);
+
+        ErrorResponse payload = ErrorResponse.of(ALREADY_EXIST_MEMBER);
+
+        // hal link processing
+        return ResponseEntity.status(payload.getStatus()).body(halProcess(payload));
+    }
+
+    private EntityModel<ErrorResponse> halProcess(ErrorResponse payload) {
+        return EntityModel.of(payload,
                 linkTo(IndexController.class).withRel("index"),
                 Link.of("http://localhost:18080/docs/index.html#" + payload.getCode()).withRel("profile"));
-
-        return ResponseEntity.status(payload.getStatus()).body(of);
     }
 }

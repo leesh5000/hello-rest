@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
@@ -42,8 +43,17 @@ public class ErrorResponse {
                 .collect(Collectors.toList());
     }
 
+    private ErrorResponse(@NotNull final ErrorCode errorCode) {
+        this.status = errorCode.getStatus();
+        this.code = errorCode.getCode();
+        this.message = errorCode.getMessage();
+    }
+
     public static ErrorResponse of(final ErrorCode code, final BindingResult bindingResult) {
-        ErrorResponse errorResponse = new ErrorResponse(code, bindingResult);
-        return errorResponse;
+        return new ErrorResponse(code, bindingResult);
+    }
+
+    public static ErrorResponse of(@NotNull final ErrorCode code) {
+        return new ErrorResponse(code);
     }
 }
