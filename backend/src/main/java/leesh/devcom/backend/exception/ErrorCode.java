@@ -17,7 +17,8 @@ public enum ErrorCode {
     /**
      *
      */
-    INVALID_INPUT_VALUE(BAD_REQUEST, 4000001, "invalid input value")
+    INVALID_INPUT_VALUE(BAD_REQUEST, 4000001, "invalid input value"),
+    ALREADY_EXIST_MEMBER(CONFLICT, 4090001, "already exist member")
     ;
 
     private final HttpStatus status;
