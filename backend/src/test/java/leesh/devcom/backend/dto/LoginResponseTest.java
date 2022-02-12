@@ -1,20 +1,19 @@
 package leesh.devcom.backend.dto;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class LoginResponseTest {
 
     @Test
-    void builderTest() {
+    void builder_getter() {
+
         LoginResponse responseDto = LoginResponse.builder()
                 .expirySec(0L)
                 .accessToken("access_token")
                 .build();
-
+        Assertions.assertThat(responseDto).isNotNull();
         String accessToken = responseDto.getAccessToken();
         Long expirySec = responseDto.getExpirySec();
     }
-
 }

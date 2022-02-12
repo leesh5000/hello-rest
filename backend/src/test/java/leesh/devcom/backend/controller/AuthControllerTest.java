@@ -339,4 +339,10 @@ class AuthControllerTest {
                         )
                 ));
     }
+
+    @DisplayName("register integration test - 409 conflict")
+    @Test
+    void register_integration_test_409() {
+
+    }
 }

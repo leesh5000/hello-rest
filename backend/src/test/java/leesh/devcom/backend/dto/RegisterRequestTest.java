@@ -13,6 +13,9 @@ class RegisterRequestTest {
                 .username("leesh")
                 .password("1111")
                 .build();
+        leesh.getEmail();
+        leesh.getPassword();
+        String username = leesh.getUsername();
     }
 
 }
