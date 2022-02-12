@@ -5,8 +5,6 @@ import leesh.devcom.backend.dto.LoginRequest;
 import leesh.devcom.backend.dto.LoginResponse;
 import leesh.devcom.backend.dto.RegisterRequest;
 import leesh.devcom.backend.dto.RegisterResponse;
-import leesh.devcom.backend.dto.assembler.LoginResponseAssembler;
-import leesh.devcom.backend.security.CustomUserDetailsService;
 import leesh.devcom.backend.security.JwtUtil;
 import leesh.devcom.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +55,7 @@ public class AuthController {
                 .id(id)
                 .build();
 
+        // hal link process
         EntityModel<RegisterResponse> body = EntityModel.of(responseDto,
                 linkTo(methodOn(AuthController.class).register(requestDto)).withSelfRel(),
                 linkTo(methodOn(AuthController.class).login(null, null)).withRel("login"),

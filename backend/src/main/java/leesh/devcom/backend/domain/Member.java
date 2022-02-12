@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.*;
 
@@ -32,7 +33,7 @@ public class Member {
         this.password = password;
     }
 
-    public static Member createMember(String email, String username, String password) {
+    public static Member createMember(@NotNull String email, @NotNull String username, @NotNull String password) {
         return new Member(email, username, password);
     }
 }

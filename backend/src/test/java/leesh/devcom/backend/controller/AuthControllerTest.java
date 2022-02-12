@@ -284,6 +284,7 @@ class AuthControllerTest {
                 ));
     }
 
+    @DisplayName("register integration test - 201 OK")
     @Test
     void register_integration_test() throws Exception {
 
