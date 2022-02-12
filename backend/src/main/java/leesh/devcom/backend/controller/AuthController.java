@@ -41,12 +41,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
-    private final CustomUserDetailsService customUserDetailsService;
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final LoginResponseAssembler assembler;
     private static final String X_AUTH = "x-auth";
 
     @PostMapping("/api/auth/register")
@@ -55,11 +53,11 @@ public class AuthController {
         Member member = Member.createMember(requestDto.getEmail(), requestDto.getUsername(), passwordEncoder.encode(requestDto.getPassword()));
         Long id = memberService.save(member);
 
-        RegisterResponse data = RegisterResponse.builder()
+        RegisterResponse responseDto = RegisterResponse.builder()
                 .id(id)
                 .build();
 
-        EntityModel<RegisterResponse> body = EntityModel.of(data,
+        EntityModel<RegisterResponse> body = EntityModel.of(responseDto,
                 linkTo(methodOn(AuthController.class).register(requestDto)).withSelfRel(),
                 linkTo(methodOn(AuthController.class).login(null, null)).withRel("login"),
                 Link.of("http://localhost:18080/docs/index.html#register").withRel("profile"));
@@ -83,12 +81,17 @@ public class AuthController {
         response.addCookie(cookie);
 
         // send response
-        LoginResponse payload = LoginResponse.builder()
+        LoginResponse responseDto = LoginResponse.builder()
                 .accessToken(accessToken)
                 .expirySec(ACCESS_TOKEN_EXPIRED_SEC)
                 .build();
 
-        return ResponseEntity.ok(assembler.toModel(payload));
+        EntityModel<LoginResponse> body = EntityModel.of(responseDto,
+                linkTo(methodOn(AuthController.class).login(null, null)).withSelfRel(),
+                linkTo(methodOn(AuthController.class).logout("")).withRel("logout"),
+                Link.of("http://localhost:18080/docs/index.html#login").withRel("profile"));
+
+        return ResponseEntity.ok(body);
     }
 
     @GetMapping("/api/auth/logout")
@@ -103,5 +106,10 @@ public class AuthController {
                 Link.of("http://localhost:18080/docs/index.html#logout").withProfile("profile")
         );
         return ResponseEntity.ok(body);
+    }
+
+    @GetMapping("/api/hello")
+    public String hello() {
+        return "hello, Devcom!";
     }
 }
