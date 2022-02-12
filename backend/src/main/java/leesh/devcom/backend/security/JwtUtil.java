@@ -3,9 +3,9 @@ package leesh.devcom.backend.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import leesh.devcom.backend.common.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 public class JwtUtil implements InitializingBean {
 
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedisUtil redisUtil;
 
     public static final Long ACCESS_TOKEN_EXPIRED_SEC = 60L;
     public static final Long REFRESH_TOKEN_EXPIRED_SEC = 2 * 60L;
@@ -39,7 +38,7 @@ public class JwtUtil implements InitializingBean {
 
     }
 
-    public String createAccessToken(Authentication authentication) {
+    public String createAccessToken(@NotNull Authentication authentication) {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -60,7 +59,7 @@ public class JwtUtil implements InitializingBean {
                 .compact();
     }
 
-    public String createRefreshToken(Authentication authentication) {
+    public String createRefreshToken(@NotNull Authentication authentication) {
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
@@ -76,7 +75,7 @@ public class JwtUtil implements InitializingBean {
                 .compact();
 
         // set redis data
-        redisUtil.set(refreshToken, userDetails, REFRESH_TOKEN_EXPIRED_SEC, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(refreshToken, userDetails.getUsername(), REFRESH_TOKEN_EXPIRED_SEC, TimeUnit.SECONDS);
         return refreshToken;
     }
 }

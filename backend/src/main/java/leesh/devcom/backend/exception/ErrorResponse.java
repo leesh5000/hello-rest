@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+//@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ErrorResponse {
 
     private HttpStatus status;
@@ -22,18 +22,12 @@ public class ErrorResponse {
     private List<Error> errors = new ArrayList<>();
 
     @Getter
-    @NoArgsConstructor(access = AccessLevel.PROTECTED)
+//    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     @AllArgsConstructor
     private static class Error {
         private String field;
         private String value;
         private String reason;
-    }
-
-    private ErrorResponse(final ErrorCode code) {
-        this.status = code.getStatus();
-        this.code = code.getCode();
-        this.message = code.getMessage();
     }
 
     private ErrorResponse(final ErrorCode code, final BindingResult bindingResult) {

@@ -1,4 +1,5 @@
 server:
+  scheme: http
   address: localhost
   port: 18080
 spring:
@@ -26,4 +27,5 @@ logging:
   level:
     org.hibernate.type.descriptor.sql: trace
 app:
-  test: 1000
+  url: http://localhost:18080
+  docsUrl: http://localhost:18080/docs/index.html

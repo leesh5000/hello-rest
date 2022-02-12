@@ -1,8 +1,10 @@
 package leesh.devcom.backend.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import leesh.devcom.backend.common.GlobalProperties;
+import leesh.devcom.backend.common.ServerProperty;
 import leesh.devcom.backend.dto.LoginRequest;
+import leesh.devcom.backend.dto.RegisterRequest;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
@@ -27,10 +30,14 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.servlet.http.HttpServletResponse;
+import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.mockito.Mockito.mock;
 import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.hypermedia.HypermediaDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
@@ -60,7 +67,7 @@ class AuthControllerTest {
     WebApplicationContext wac;
 
     @Autowired
-    GlobalProperties globalProperties;
+    ServerProperty serverProperty;
 
     @BeforeEach
     void setUp(WebApplicationContext wac, RestDocumentationContextProvider restDocument) {
@@ -68,9 +75,9 @@ class AuthControllerTest {
                 .webAppContextSetup(wac)
                 .apply(documentationConfiguration(restDocument)
                         .uris()
-                            .withScheme("http")
-                            .withHost(globalProperties.getServer().getAddress())
-                            .withPort(globalProperties.getServer().getPort())
+                            .withScheme(serverProperty.getScheme())
+                            .withHost(serverProperty.getAddress())
+                            .withPort(serverProperty.getPort())
                         .and()
                         .operationPreprocessors()
                             .withRequestDefaults(prettyPrint())
@@ -83,8 +90,25 @@ class AuthControllerTest {
 
     }
 
+    @DisplayName("login unit test")
     @Test
-    public void loginTest_ok() throws Exception {
+    void login_unit_test() {
+
+        // given
+        LoginRequest requestDto = LoginRequest.builder()
+                .email("test1@gmail.com")
+                .password("1111")
+                .build();
+
+        HttpServletResponse mock = mock(HttpServletResponse.class);
+
+        // when
+        ResponseEntity<?> login = authController.login(requestDto, mock);
+    }
+
+    @DisplayName("[login integration test] Success")
+    @Test
+    public void login_integration_test_ok() throws Exception {
 
         // given
         LoginRequest data = LoginRequest.builder()
@@ -93,19 +117,21 @@ class AuthControllerTest {
                 .build();
 
         // when
-        ResultActions result = mockMvc. perform(post("/auth/login")
+        ResultActions result = mockMvc. perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(data)));
 
         // then
         result
-                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
                 .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("x-auth=")))
                 .andExpect(jsonPath("access_token").exists())
                 .andExpect(jsonPath("expiry_sec").exists())
                 .andExpect(jsonPath("_links.self.href").exists())
                 .andExpect(jsonPath("_links.profile.href").exists())
+                .andExpect(jsonPath("_links.logout.href").exists())
                 .andDo(print());
 
         // create rest docs snippets
@@ -116,7 +142,8 @@ class AuthControllerTest {
                         links(
                                 halLinks(),
                                 linkWithRel("self").description("link to self"),
-                                linkWithRel("profile").description("link to profile")
+                                linkWithRel("profile").description("link to profile"),
+                                linkWithRel("logout").description("link to logout")
                         ),
                         requestHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
@@ -126,13 +153,15 @@ class AuthControllerTest {
                                 fieldWithPath("password").type(JsonFieldType.STRING).description("user password")
                         ),
                         responseHeaders(
-                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type"),
+                                headerWithName(HttpHeaders.SET_COOKIE).description("refresh token")
                         ),
                         responseFields(
                                 fieldWithPath("access_token").type(JsonFieldType.STRING).description("access token"),
                                 fieldWithPath("expiry_sec").type(JsonFieldType.NUMBER).description("Expiration time of access token"),
                                 fieldWithPath("_links.self.href").type(JsonFieldType.STRING).description("link to self"),
-                                fieldWithPath("_links.profile.href").type(JsonFieldType.STRING).description("link to profile")
+                                fieldWithPath("_links.profile.href").type(JsonFieldType.STRING).description("link to profile"),
+                                fieldWithPath("_links.logout.href").type(JsonFieldType.STRING).description("link to logout")
                         )
                 ));
     }
@@ -148,7 +177,7 @@ class AuthControllerTest {
                 .build();
 
         // when
-        ResultActions result = mockMvc.perform(post("/auth/login")
+        ResultActions result = mockMvc.perform(post("/api/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaTypes.HAL_JSON_VALUE)
                 .content(objectMapper.writeValueAsString(data)));
@@ -202,6 +231,111 @@ class AuthControllerTest {
                 Arguments.arguments("test1@gmail.com", ""),
                 Arguments.arguments(" ", " "),
                 Arguments.arguments("aa", "1111")
-            );
+        );
+    }
+
+    @DisplayName("logout unit test")
+    @Test
+    void logout_unit_test() {
+        ResponseEntity<?> logout = authController.logout("refresh_token");
+    }
+
+    @DisplayName("logout integration test - 200 ok")
+    @Test
+    void logout_integration_test_200_ok() throws Exception {
+        // given & when
+        ResultActions result = mockMvc.perform(post("/api/auth/logout")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON_VALUE));
+
+        // then
+        result
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("_links.self.href").exists())
+                .andExpect(jsonPath("_links.login.href").exists())
+                .andExpect(jsonPath("_links.index.href").exists())
+                .andExpect(jsonPath("_links.profile.href").exists())
+                .andDo(print());
+
+        // create rest docs snippets
+        result
+                .andDo(document("logout",
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("login").description("link to login"),
+                                linkWithRel("index").description("link to index"),
+                                linkWithRel("profile").description("link to document")
+                        ),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type"),
+                                headerWithName(HttpHeaders.COOKIE).description("refresh token")
+                        ),
+                        responseHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                        ),
+                        responseFields(
+                                fieldWithPath("_links.self.href").type(JsonFieldType.STRING).description("self url"),
+                                fieldWithPath("_links.index.href").type(JsonFieldType.STRING).description("index url"),
+                                fieldWithPath("_links.login.href").type(JsonFieldType.STRING).description("login url"),
+                                fieldWithPath("_links.profile.href").type(JsonFieldType.STRING).description("document url")
+                        )
+                ));
+    }
+
+    @Test
+    void register_integration_test() throws Exception {
+
+        // given
+        RegisterRequest requestDto = RegisterRequest.builder()
+                .email("leesh@gmail.com")
+                .username("leesh")
+                .password("1111")
+                .build();
+
+        // when
+        ResultActions result = mockMvc. perform(post("/api/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON_VALUE)
+                .content(objectMapper.writeValueAsString(requestDto)));
+
+        // then
+        result
+                .andExpect(status().isCreated())
+                .andExpect(header().string(HttpHeaders.CONTENT_TYPE, MediaTypes.HAL_JSON_VALUE))
+                .andExpect(jsonPath("id").isNumber())
+                .andExpect(jsonPath("_links.self.href").exists())
+                .andExpect(jsonPath("_links.profile.href").exists())
+                .andExpect(jsonPath("_links.login.href").exists())
+                .andDo(print());
+
+        // create rest docs snippets
+        result
+                .andDo(document("register",
+                        links(
+                                halLinks(),
+                                linkWithRel("self").description("link to self"),
+                                linkWithRel("login").description("link to logout"),
+                                linkWithRel("profile").description("link to profile")
+                        ),
+                        requestHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                        ),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING).description("user email"),
+                                fieldWithPath("username").type(JsonFieldType.STRING).description("user name"),
+                                fieldWithPath("password").type(JsonFieldType.STRING).description("user password")
+                        ),
+                        responseHeaders(
+                                headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")
+                        ),
+                        responseFields(
+                                fieldWithPath("id").type(JsonFieldType.NUMBER).description("user key id"),
+                                fieldWithPath("_links.self.href").type(JsonFieldType.STRING).description("link to self"),
+                                fieldWithPath("_links.profile.href").type(JsonFieldType.STRING).description("link to profile"),
+                                fieldWithPath("_links.login.href").type(JsonFieldType.STRING).description("link to login")
+                        )
+                ));
     }
 }
