@@ -85,6 +85,7 @@ public class AuthController {
                 .expirySec(ACCESS_TOKEN_EXPIRED_SEC)
                 .build();
 
+        // hal link process
         EntityModel<LoginResponse> body = EntityModel.of(responseDto,
                 linkTo(methodOn(AuthController.class).login(null, null)).withSelfRel(),
                 linkTo(methodOn(AuthController.class).logout("")).withRel("logout"),
