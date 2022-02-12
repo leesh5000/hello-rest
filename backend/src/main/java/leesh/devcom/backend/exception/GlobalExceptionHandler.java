@@ -29,9 +29,10 @@ public class GlobalExceptionHandler {
 
         ErrorResponse payload = ErrorResponse.of(INVALID_INPUT_VALUE, e.getBindingResult());
 
+        // hal link processing
         EntityModel<ErrorResponse> of = EntityModel.of(payload,
                 linkTo(IndexController.class).withRel("index"),
-                Link.of("index.html#_" + payload.getCode()).withRel("profile"));
+                Link.of("http://localhost:18080/docs/index.html#" + payload.getCode()).withRel("profile"));
 
         return ResponseEntity.status(payload.getStatus()).body(of);
     }
