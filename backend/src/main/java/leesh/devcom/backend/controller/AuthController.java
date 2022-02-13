@@ -107,7 +107,7 @@ public class AuthController {
                 linkTo(methodOn(AuthController.class).logout(refreshToken)).withSelfRel(),
                 linkTo(methodOn(AuthController.class).login(null, null)).withRel("login"),
                 linkTo(methodOn(IndexController.class).index()).withRel("index"),
-                Link.of("http://localhost:18080/docs/index.html#logout").withProfile("profile")
+                Link.of("http://localhost:18080/docs/index.html#logout").withRel("profile")
         );
         return ResponseEntity.ok(body);
     }

@@ -7,8 +7,10 @@ import leesh.devcom.backend.dto.LoginRequest;
 import leesh.devcom.backend.dto.RegisterRequest;
 import leesh.devcom.backend.exception.CustomException;
 import leesh.devcom.backend.exception.ErrorCode;
+import leesh.devcom.backend.security.CustomUserDetailsService;
+import leesh.devcom.backend.security.JwtUtil;
 import leesh.devcom.backend.service.MemberService;
-import org.assertj.core.api.Assertions;
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -27,15 +29,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.net.http.HttpResponse;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -49,6 +54,8 @@ import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.docu
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -76,10 +83,17 @@ class AuthControllerTest {
     @Autowired
     MemberService memberService;
 
+    @Autowired
+    JwtUtil jwtUtil;
+
+    @Autowired
+    CustomUserDetailsService customUserDetailsService;
+
     @BeforeEach
     void setUp(WebApplicationContext wac, RestDocumentationContextProvider restDocument) {
         this.mockMvc = MockMvcBuilders
                 .webAppContextSetup(wac)
+                .apply(springSecurity())
                 .apply(documentationConfiguration(restDocument)
                         .uris()
                             .withScheme(serverProperty.getScheme())
@@ -250,10 +264,20 @@ class AuthControllerTest {
     @DisplayName("logout integration test - 200 ok")
     @Test
     void logout_integration_test_200_ok() throws Exception {
-        // given & when
-        ResultActions result = mockMvc.perform(post("/api/auth/logout")
+
+        // given
+        String email = "test1@gmail.com";
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+        String accessToken = jwtUtil.createAccessToken(userDetails);
+        String refreshToken = jwtUtil.createRefreshToken(accessToken);
+        Cookie cookie = new Cookie("x-auth", refreshToken);
+
+        // when
+        ResultActions result = mockMvc.perform(get("/api/auth/logout")
                 .contentType(MediaType.APPLICATION_JSON)
-                .accept(MediaTypes.HAL_JSON_VALUE));
+                .accept(MediaTypes.HAL_JSON_VALUE)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+                .cookie(cookie));
 
         // then
         result
@@ -277,7 +301,8 @@ class AuthControllerTest {
                         ),
                         requestHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("content type"),
-                                headerWithName(HttpHeaders.COOKIE).description("refresh token")
+                                headerWithName(HttpHeaders.AUTHORIZATION).description("access token")
+//                                headerWithName(HttpHeaders.COOKIE).description("cookie")
                         ),
                         responseHeaders(
                                 headerWithName(HttpHeaders.CONTENT_TYPE).description("content type")

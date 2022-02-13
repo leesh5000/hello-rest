@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
     protected ResponseEntity<?> handleCustomException(CustomException e) {
         log.error("handleCustomException", e);
 
-        ErrorResponse payload = ErrorResponse.of(ALREADY_EXIST_MEMBER);
+        ErrorResponse payload = ErrorResponse.of(e.getErrorCode());
 
         // hal link processing
         return ResponseEntity.status(payload.getStatus()).body(halProcess(payload));
