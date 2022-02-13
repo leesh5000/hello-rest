@@ -34,7 +34,6 @@ public class JwtUtil implements InitializingBean {
 
     public static final String AUTHORITIES_KEY = "auth";
     private final RedisTemplate<String, Object> redisTemplate;
-    private final ObjectMapper objectMapper;
     public static final Long ACCESS_TOKEN_EXPIRED_SEC = 60L;
     public static final Long REFRESH_TOKEN_EXPIRED_SEC = 2 * 60L;
     public static final String ISSUER = "devcom";
@@ -85,7 +84,7 @@ public class JwtUtil implements InitializingBean {
         return refreshToken;
     }
 
-    public Authentication getAuthentication(String accessToken) {
+    public Authentication getAuthentication(@NotNull String accessToken) {
 
         Claims claims = getClaims(accessToken);
 
@@ -97,11 +96,11 @@ public class JwtUtil implements InitializingBean {
         return new UserAuthentication(claims.getSubject(), "", authorities);
     }
 
-    public void deleteRefreshToken(String refreshToken) {
+    public void deleteRefreshToken(@NotNull String refreshToken) {
         redisTemplate.opsForValue().getAndDelete(refreshToken);
     }
 
-    private Claims getClaims(String jwt) {
+    private Claims getClaims(@NotNull String jwt) {
         return Jwts
                 .parserBuilder()
                 .setSigningKey(key)
@@ -110,7 +109,7 @@ public class JwtUtil implements InitializingBean {
                 .getBody();
     }
 
-    public boolean validate(String jwt) {
+    public boolean validate(@NotNull String jwt) {
         try {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
             return true;
