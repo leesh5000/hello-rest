@@ -6,6 +6,7 @@ import leesh.devcom.backend.dto.LoginResponse;
 import leesh.devcom.backend.dto.RegisterRequest;
 import leesh.devcom.backend.dto.RegisterResponse;
 import leesh.devcom.backend.security.JwtUtil;
+import leesh.devcom.backend.security.UserAuthentication;
 import leesh.devcom.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,8 +19,8 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -67,10 +68,14 @@ public class AuthController {
     @PostMapping("/api/auth/login")
     public ResponseEntity<?> login(@RequestBody @Validated final LoginRequest requestDto, HttpServletResponse response) {
 
-        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(requestDto.getEmail(), requestDto.getPassword()));
+        // user authenticate
+        UserAuthentication userAuthentication = new UserAuthentication(requestDto.getEmail(), requestDto.getPassword());
+        Authentication authenticate = authenticationManager.authenticate(userAuthentication); // customUserDetailsService -> loadByUsername
+        UserDetails userDetails = (UserDetails) authenticate.getPrincipal();
 
-        String accessToken = jwtUtil.createAccessToken(authenticate);
-        String refreshToken = jwtUtil.createRefreshToken(authenticate);
+        // create token
+        String accessToken = jwtUtil.createAccessToken(userDetails);
+        String refreshToken = jwtUtil.createRefreshToken(accessToken);
 
         // set cookie
         Cookie cookie = new Cookie(X_AUTH, refreshToken);

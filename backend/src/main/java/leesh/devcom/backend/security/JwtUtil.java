@@ -1,5 +1,7 @@
 package leesh.devcom.backend.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -8,26 +10,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtUtil implements InitializingBean {
 
+    public static final String AUTHORITIES_KEY = "auth";
     private final RedisTemplate<String, Object> redisTemplate;
-
+    private final ObjectMapper objectMapper;
     public static final Long ACCESS_TOKEN_EXPIRED_SEC = 60L;
     public static final Long REFRESH_TOKEN_EXPIRED_SEC = 2 * 60L;
     public static final String ISSUER = "devcom";
@@ -38,33 +39,32 @@ public class JwtUtil implements InitializingBean {
 
     }
 
-    public String createAccessToken(@NotNull Authentication authentication) {
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("email", userDetails.getUsername());
-        claims.put("authorities", userDetails.getAuthorities());
+    public String createAccessToken(@NotNull UserDetails userDetails) {
 
         Instant issuedAt = Instant.now();
         Instant expiredAt = issuedAt.plus(ACCESS_TOKEN_EXPIRED_SEC, ChronoUnit.SECONDS);
+
+        String authorities = userDetails.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(","));
 
         return Jwts.builder()
                 .setId(UUID.randomUUID().toString())
                 .setIssuer(ISSUER)
                 .setIssuedAt(Date.from(issuedAt))
                 .setExpiration(Date.from(expiredAt))
-                .setClaims(claims)
+                .setSubject(userDetails.getUsername())
+                .claim(AUTHORITIES_KEY, authorities)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String createRefreshToken(@NotNull Authentication authentication) {
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+    public String createRefreshToken(@NotNull String accessToken) {
 
         Instant issuedAt = Instant.now();
         Instant expiredAt = issuedAt.plus(REFRESH_TOKEN_EXPIRED_SEC, ChronoUnit.SECONDS);
+
+        String subject = getClaims(accessToken).getSubject();
 
         String refreshToken = Jwts.builder()
                 .setId(UUID.randomUUID().toString())
@@ -75,7 +75,16 @@ public class JwtUtil implements InitializingBean {
                 .compact();
 
         // set redis data
-        redisTemplate.opsForValue().set(refreshToken, userDetails.getUsername(), REFRESH_TOKEN_EXPIRED_SEC, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(refreshToken, subject, REFRESH_TOKEN_EXPIRED_SEC, TimeUnit.SECONDS);
         return refreshToken;
+    }
+
+    private Claims getClaims(String jwt) {
+        return Jwts
+                .parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(jwt)
+                .getBody();
     }
 }
