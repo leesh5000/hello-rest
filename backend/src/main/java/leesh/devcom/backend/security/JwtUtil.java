@@ -97,6 +97,10 @@ public class JwtUtil implements InitializingBean {
         return new UserAuthentication(claims.getSubject(), "", authorities);
     }
 
+    public void deleteRefreshToken(String refreshToken) {
+        redisTemplate.opsForValue().getAndDelete(refreshToken);
+    }
+
     private Claims getClaims(String jwt) {
         return Jwts
                 .parserBuilder()

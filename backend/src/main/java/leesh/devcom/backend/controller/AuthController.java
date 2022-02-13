@@ -43,7 +43,6 @@ public class AuthController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
-    private final RedisTemplate<String, Object> redisTemplate;
     private static final String X_AUTH = "x-auth";
 
     @PostMapping("/api/auth/register")
@@ -102,7 +101,7 @@ public class AuthController {
     @GetMapping("/api/auth/logout")
     public ResponseEntity<?> logout(@NotNull @CookieValue(name = X_AUTH) String refreshToken) {
 
-        redisTemplate.opsForValue().getAndDelete(refreshToken);
+        jwtUtil.deleteRefreshToken(refreshToken);
         RepresentationModel<?> body = new RepresentationModel<>();
         body.add(
                 linkTo(methodOn(AuthController.class).logout(refreshToken)).withSelfRel(),
