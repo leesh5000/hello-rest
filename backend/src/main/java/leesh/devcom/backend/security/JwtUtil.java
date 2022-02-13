@@ -1,25 +1,31 @@
 package leesh.devcom.backend.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import leesh.devcom.backend.exception.CustomException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
+import static leesh.devcom.backend.exception.ErrorCode.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -79,6 +85,18 @@ public class JwtUtil implements InitializingBean {
         return refreshToken;
     }
 
+    public Authentication getAuthentication(String accessToken) {
+
+        Claims claims = getClaims(accessToken);
+
+        Collection<? extends GrantedAuthority> authorities =
+                Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
+                        .map(SimpleGrantedAuthority::new)
+                        .collect(Collectors.toList());
+
+        return new UserAuthentication(claims.getSubject(), "", authorities);
+    }
+
     private Claims getClaims(String jwt) {
         return Jwts
                 .parserBuilder()
@@ -86,5 +104,18 @@ public class JwtUtil implements InitializingBean {
                 .build()
                 .parseClaimsJws(jwt)
                 .getBody();
+    }
+
+    public boolean validate(String jwt) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(jwt);
+            return true;
+        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
+            throw new CustomException(INVALID_JWT);
+        } catch (ExpiredJwtException e) {
+            throw new CustomException(EXPIRED_ACCESS_TOKEN);
+        } catch (UnsupportedJwtException | IllegalArgumentException e) {
+            throw new CustomException(INTERNAL_SERVER_ERROR);
+        }
     }
 }

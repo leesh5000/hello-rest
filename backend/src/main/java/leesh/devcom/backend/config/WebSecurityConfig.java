@@ -1,8 +1,10 @@
 package leesh.devcom.backend.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import leesh.devcom.backend.security.CustomUserDetailsService;
+import leesh.devcom.backend.security.JwtFilter;
+import leesh.devcom.backend.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -10,12 +12,12 @@ import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
@@ -28,6 +30,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CustomUserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
+    private final JwtUtil jwtUtil;
 
     @Bean(BeanIds.AUTHENTICATION_MANAGER)
     @Override
@@ -67,17 +71,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic()
                     .disable()
                 .authorizeRequests()
-                .antMatchers(
+                    .antMatchers(
                         "/", "/error", "/favicon.ico",
                         "/**/*.png", "/**/*.gif", "/**/*.svg",
                         "/**/*.jpg", "/**/*.html", "/**/*.css", "/**/*.js", "/h2-console/**")
-                    .permitAll()
-                .antMatchers("/api/auth/login", "/api/auth/register")
-                    .permitAll()
+                        .permitAll()
+                    .antMatchers("/api/auth/login", "/api/auth/register")
+                        .permitAll()
                 .anyRequest()
                     .authenticated();
 
-//        httpSecurity.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        httpSecurity.addFilterBefore(new JwtFilter(objectMapper, jwtUtil), UsernamePasswordAuthenticationFilter.class);
     }
 
 }
