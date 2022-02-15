@@ -18,10 +18,15 @@ public enum ErrorCode {
      *
      */
     INVALID_INPUT_VALUE(BAD_REQUEST, 4000001, "invalid input value"),
+
+    NOT_FOUND_ACCESS_TOKEN(UNAUTHORIZED, 4010001, "access token not found in header field"),
+    INVALID_JWT(UNAUTHORIZED, 4010002, "The token was signed incorrectly"),
+    EXPIRED_ACCESS_TOKEN(UNAUTHORIZED, 4010003, "The access token was expired"),
+
+    NOT_EXIST_MEMBER(CONFLICT, 4040001, "already exist member"),
+
     ALREADY_EXIST_MEMBER(CONFLICT, 4090001, "already exist member"),
-    NOT_FOUND_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, 4010001, "access token not found in header field"),
-    INVALID_JWT(HttpStatus.UNAUTHORIZED, 4010001, "The token was signed incorrectly"),
-    EXPIRED_ACCESS_TOKEN(HttpStatus.UNAUTHORIZED, 4010001, "The access token was expired"),
+
 
     /**
      *
