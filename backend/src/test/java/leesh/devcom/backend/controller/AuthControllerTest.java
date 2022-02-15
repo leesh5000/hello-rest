@@ -3,6 +3,7 @@ package leesh.devcom.backend.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import leesh.devcom.backend.common.ServerProperty;
 import leesh.devcom.backend.domain.Member;
+import leesh.devcom.backend.domain.MemberRepository;
 import leesh.devcom.backend.dto.LoginRequest;
 import leesh.devcom.backend.dto.RegisterRequest;
 import leesh.devcom.backend.exception.CustomException;
@@ -10,7 +11,6 @@ import leesh.devcom.backend.exception.ErrorCode;
 import leesh.devcom.backend.security.CustomUserDetailsService;
 import leesh.devcom.backend.security.JwtUtil;
 import leesh.devcom.backend.service.MemberService;
-import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -30,14 +30,13 @@ import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.filter.DelegatingFilterProxy;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -84,10 +83,16 @@ class AuthControllerTest {
     MemberService memberService;
 
     @Autowired
+    MemberRepository memberRepository;
+
+    @Autowired
     JwtUtil jwtUtil;
 
     @Autowired
     CustomUserDetailsService customUserDetailsService;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp(WebApplicationContext wac, RestDocumentationContextProvider restDocument) {
@@ -104,11 +109,15 @@ class AuthControllerTest {
                             .withRequestDefaults(prettyPrint())
                             .withResponseDefaults(prettyPrint()))
                 .build();
+
+        memberRepository.save(Member.createMember("test1@gmail.com", "test1", passwordEncoder.encode("1111")));
+        memberRepository.save(Member.createMember("test2@gmail.com", "test2", passwordEncoder.encode("1111")));
+        memberRepository.save(Member.createMember("test3@gmail.com", "test3", passwordEncoder.encode("1111")));
     }
 
     @AfterEach
     void tearDown() {
-
+        memberRepository.deleteAll();
     }
 
     @DisplayName("login unit test")
