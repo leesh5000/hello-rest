@@ -83,16 +83,10 @@ class AuthControllerTest {
     MemberService memberService;
 
     @Autowired
-    MemberRepository memberRepository;
-
-    @Autowired
     JwtUtil jwtUtil;
 
     @Autowired
     CustomUserDetailsService customUserDetailsService;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void setUp(WebApplicationContext wac, RestDocumentationContextProvider restDocument) {
@@ -110,14 +104,14 @@ class AuthControllerTest {
                             .withResponseDefaults(prettyPrint()))
                 .build();
 
-        memberRepository.save(Member.createMember("test1@gmail.com", "test1", passwordEncoder.encode("1111")));
-        memberRepository.save(Member.createMember("test2@gmail.com", "test2", passwordEncoder.encode("1111")));
-        memberRepository.save(Member.createMember("test3@gmail.com", "test3", passwordEncoder.encode("1111")));
+        memberService.save(RegisterRequest.builder().email("test1@gmail.com").username("test1").password("1111").build());
+        memberService.save(RegisterRequest.builder().email("test2@gmail.com").username("test2").password("1111").build());
+        memberService.save(RegisterRequest.builder().email("test3@gmail.com").username("test3").password("1111").build());
     }
 
     @AfterEach
     void tearDown() {
-        memberRepository.deleteAll();
+        memberService.deleteAll();
     }
 
     @DisplayName("login unit test")
@@ -389,8 +383,11 @@ class AuthControllerTest {
         String username = "leesh";
         String password = "1111";
 
-        Member member = Member.createMember(email, username, password);
-        memberService.save(member);
+        RegisterRequest build = RegisterRequest.builder()
+                .email(email).username(username).password(password)
+                .build();
+
+        memberService.save(build);
 
         RegisterRequest requestDto = RegisterRequest.builder()
                 .email(email)

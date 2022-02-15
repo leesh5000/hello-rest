@@ -1,6 +1,6 @@
 package leesh.devcom.backend.service;
 
-import leesh.devcom.backend.domain.Member;
+import leesh.devcom.backend.dto.RegisterRequest;
 import leesh.devcom.backend.exception.CustomException;
 import leesh.devcom.backend.exception.ErrorCode;
 import org.assertj.core.api.Assertions;
@@ -19,28 +19,31 @@ class MemberServiceTest {
     @Test
     void saveTest() {
 
+        // given
         String email = "leesh@gmail.com";
         String username = "leesh";
         String password = "1111";
-        Member member = Member.createMember(email, username, password);
-        Long save = memberService.save(member);
+
+        RegisterRequest build = RegisterRequest.builder()
+                .email(email).username(username).password(password)
+                .build();
+        Long save = memberService.save(build);
 
         Assertions.assertThat(save).isGreaterThan(0L);
     }
 
     @Test
     void save_fail_test() {
+        // given
         String email = "leesh@gmail.com";
         String username = "leesh";
         String password = "1111";
-        Member member = Member.createMember(email, username, password);
-        Long save = memberService.save(member);
 
-        Member newMember = Member.createMember("leesh@gmail.com", "leesh1", "1111");
-        CustomException e = assertThrows(CustomException.class, () -> {
-            memberService.save(newMember);
-        });
+        RegisterRequest build = RegisterRequest.builder()
+                .email(email).username(username).password(password)
+                .build();
 
+        CustomException e = assertThrows(CustomException.class, () -> memberService.save(build));
         Assertions.assertThat(e.getErrorCode()).isEqualTo(ErrorCode.ALREADY_EXIST_MEMBER);
     }
 }

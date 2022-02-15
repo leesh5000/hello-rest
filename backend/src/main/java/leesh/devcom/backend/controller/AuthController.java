@@ -1,6 +1,5 @@
 package leesh.devcom.backend.controller;
 
-import leesh.devcom.backend.domain.Member;
 import leesh.devcom.backend.dto.LoginRequest;
 import leesh.devcom.backend.dto.LoginResponse;
 import leesh.devcom.backend.dto.RegisterRequest;
@@ -11,7 +10,6 @@ import leesh.devcom.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.MediaTypes;
@@ -21,7 +19,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,15 +38,13 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final MemberService memberService;
-    private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private static final String X_AUTH = "x-auth";
 
     @PostMapping("/api/auth/register")
     public ResponseEntity<?> register(@RequestBody @Validated final RegisterRequest requestDto) {
 
-        Member member = Member.createMember(requestDto.getEmail(), requestDto.getUsername(), passwordEncoder.encode(requestDto.getPassword()));
-        Long id = memberService.save(member);
+        Long id = memberService.save(requestDto);
 
         RegisterResponse responseDto = RegisterResponse.builder()
                 .id(id)
