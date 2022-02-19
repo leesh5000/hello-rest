@@ -441,4 +441,9 @@ class AuthControllerTest {
                         )
                 ));
     }
+
+    @Test
+    void hello_test() {
+        String hello = authController.hello();
+    }
 }

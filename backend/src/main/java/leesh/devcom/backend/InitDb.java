@@ -24,12 +24,7 @@ public class InitDb {
     CommandLineRunner loadInitData() {
         return args -> {
             log.info("init db start...");
-//            memberRepository.save(createMember("test1@gmail.com", "test1", passwordEncoder.encode("1111")));
-//            memberRepository.save(createMember("test2@gmail.com", "test2", passwordEncoder.encode("1111")));
-//            memberRepository.save(createMember("test3@gmail.com", "test3", passwordEncoder.encode("1111")));
-//            memberRepository.save(createMember("test4@gmail.com", "test4", passwordEncoder.encode("1111")));
-//            memberRepository.save(createMember("test5@gmail.com", "test5", passwordEncoder.encode("1111")));
-//            memberRepository.save(createMember("test6@gmail.com", "test6", passwordEncoder.encode("1111")));
+            memberRepository.save(createMember("admin@gmail.com", "admin", passwordEncoder.encode("1111")));
             log.info("init db done...");
         };
     }
