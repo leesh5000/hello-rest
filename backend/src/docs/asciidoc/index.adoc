@@ -42,7 +42,6 @@ include::{snippets}/login/links.adoc[]
 == ERROR CODE
 
 === 4000001
-
 include::{snippets}/4000001/http-response.adoc[]
 
 ==== fields
@@ -50,3 +49,5 @@ include::{snippets}/4000001/response-fields.adoc[]
 
 ==== hal links
 include::{snippets}/4000001/links.adoc[]
+
+=== 4090001
