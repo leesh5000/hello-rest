@@ -29,3 +29,5 @@ logging:
 app:
   url: http://localhost:18080
   docsUrl: http://localhost:18080/docs/index.html
+  cors:
+    allowedOrigins: http://localhost:3000

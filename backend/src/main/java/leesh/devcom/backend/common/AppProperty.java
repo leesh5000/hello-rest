@@ -12,4 +12,10 @@ import org.springframework.boot.context.properties.ConstructorBinding;
 public class AppProperty {
     private final String url;
     private final String docsUrl;
+
+    @Getter
+    @RequiredArgsConstructor
+    public static final class Cors {
+        private final String[] allowedOrigins;
+    }
 }
