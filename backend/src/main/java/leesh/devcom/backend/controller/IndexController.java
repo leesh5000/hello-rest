@@ -23,7 +23,7 @@ public class IndexController {
 
         links.add(
                 linkTo(methodOn(IndexController.class).index()).withSelfRel(),
-                Link.of("http://localhost:18080/docs/index.html").withProfile("profile"),
+                Link.of("http://localhost:18080/docs/index.html").withRel("profile"),
                 linkTo(methodOn(AuthController.class).login(null, null)).withRel("login")
         );
 
