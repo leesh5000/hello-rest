@@ -7,7 +7,7 @@ export function loginUser(requestBody) {
     const onSilentRefresh = () => {
         axios.get('/api/users/silent-refresh')
             .then(response => onLoginSuccess(response.data))
-            .catch(error => {
+            .catch(() => {
                 alert('token refresh error');
             })
     }
@@ -26,7 +26,7 @@ export function loginUser(requestBody) {
     const responseBody = axios
         .post(LOGIN_URL, requestBody)
         .then(response => onLoginSuccess(response))
-        .catch(error => {
+        .catch(() => {
             return false;
         });
 
