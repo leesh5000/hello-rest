@@ -39,6 +39,57 @@ include::{snippets}/login/response-fields.adoc[]
 ==== hal links
 include::{snippets}/login/links.adoc[]
 
+== REGISTER
+
+=== REQUEST
+include::{snippets}/register/http-request.adoc[]
+
+==== headers
+include::{snippets}/register/request-headers.adoc[]
+
+==== fields
+include::{snippets}/register/request-fields.adoc[]
+
+==== sample
+include::{snippets}/register/curl-request.adoc[]
+
+=== RESPONSE
+include::{snippets}/register/http-response.adoc[]
+
+==== headers
+include::{snippets}/register/response-headers.adoc[]
+
+==== fields
+include::{snippets}/register/response-fields.adoc[]
+
+==== hal links
+include::{snippets}/register/links.adoc[]
+
+== LOGOUT
+
+=== REQUEST
+
+include::{snippets}/logout/http-request.adoc[]
+
+==== headers
+include::{snippets}/logout/request-headers.adoc[]
+
+==== sample
+include::{snippets}/logout/curl-request.adoc[]
+
+=== RESPONSE
+
+include::{snippets}/logout/http-response.adoc[]
+
+==== headers
+include::{snippets}/logout/response-headers.adoc[]
+
+==== fields
+include::{snippets}/logout/response-fields.adoc[]
+
+==== hal links
+include::{snippets}/logout/links.adoc[]
+
 == ERROR CODE
 
 === 4000001
@@ -51,3 +102,10 @@ include::{snippets}/4000001/response-fields.adoc[]
 include::{snippets}/4000001/links.adoc[]
 
 === 4090001
+include::{snippets}/4090001/http-response.adoc[]
+
+==== fields
+include::{snippets}/4090001/response-fields.adoc[]
+
+==== hal links
+include::{snippets}/4090001/links.adoc[]
