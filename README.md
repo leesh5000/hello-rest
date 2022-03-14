@@ -1,47 +1,11 @@
-# Boiler-Plate 프로젝트
+# rest market
 
-# 목차
+rest market 프로젝트는 여러 상품 리소스를 대상으로 rest 아키텍처를 따르는 api server를 구현한 프로젝트입니다. 대부분의 rest api가 사실 rest 아키텍처 설계 원칙을 만족시키지 못합니다. 이러한 점에 동기가 생겨 "한 번 로이 필딩이 제시한 진짜 rest 아키텍처르 따르는 api 서버를 만들어보자"는 목적으로 시작하게 되었습니다.
 
-1. [프로젝트 소개](#프로젝트-소개)
-    1. [프로젝트 구조](#프로젝트-구조)
-    2. [도메인 모델](#도메인-모델)
-    3. [ERD](#ERD)
-    4. [TDD](#TDD)
-    5. [REST API Spec](#REST-API-Spec)
-2. [참고](#참고)
-    1. [REST API](#REST-API)
-    2. [Authentication & Authorization](#Authentication-&-Authorization)
-    3. [Json Web Token](#Json-Web-Token)
-    4. [Layered Architecture](#Layered-Architecture)
-    5. CSR & SSR
-3. [출처](#출처)
+## 개발 전 배경지식
 
-## 프로젝트 소개
+### 1. rest 아키텍처
 
-- Spring, React를 이용하여 간단한 로그인/로그아웃/회원가입 기능을 가진 웹 프로젝트를 만들어본다.
-- 유저 인증/인가에는 토큰과 OAuth 방식을 사용
-- 본 프로젝트는 CSR 구조이며, 프론트 서버는 리액트 라이브러리, 백엔드 서버는 Spring 프레임워크를 사용하여 만들었습니다.
-- 백엔드 서버에서는 유저 화면에 종속적이지 않으며, 오직 *REST API*만으로 프론트 서버와 통신합니다.
-- *TDD(테스트 주도 개발)* 을 통해 모든
-- `REST API`를 지키기 위한 여러가지 규약들 (Self-descriptive, )
-
-### 프로젝트 구조
-
-### 도메인 모델
-
-### ERD
-
-### TDD
-
-### REST API Spec
-
-회원가입
-
-## 참고
-
-### 1. REST API
-
-#### 1-1. REST API 란 무엇인가?
 
 - 로이 필딩의 박사 논문에서 처음으로 소개
 - 어떻게 하면 인터넷 상에 존재하는 서로 다른 시스템 간에 독립적인 진화를 보장할 것인가에 대한 문제해결
