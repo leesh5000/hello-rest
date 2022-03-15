@@ -3,6 +3,8 @@
 hello rest 프로젝트는 rest 아키텍처를 따르는 api server를 구현한 프로젝트입니다. 대부분의 rest api가 사실 rest 아키텍처 설계 원칙을 만족시키지 못합니다. 
 이러한 점에 동기가 생겨 "한 번 로이 필딩이 제시한 진짜 rest 아키텍처르 따르는 api 서버를 만들어보자"는 목적으로 시작하게 되었습니다.
 
+본 프로젝트에서는 rest api 구현뿐 만 아니라 spring rest docs 프레임워크를 통해 자동으로 api 문서를 생성하는 작업도 수행하였습니다.
+
 ## 개발 전 배경지식
 
 ### 1. rest 아키텍처
@@ -64,8 +66,21 @@ api url에 불필요한 버저닝을 할 필요가 없고, 마찬가지로 클�
 하지만, 만약 개발자가 클라/서버를 모두 통제할 수 있거나, REST 아키텍처를 설계하여 얻는 이익이 크지 않다고 판단될 때는 
 생각해 볼 필요가 있을 것 같다.
 
+## 사용된 기술
+
+- 언어 : Java 11
+- 프레임워크 : SpringBoot (Srping Hateoas, Spring Rest Docs, ...)
+- DB : redis, h2
+- 인프라 : Docker
+
 ## 프로젝트 시작
 ```
+/* cd project root */
+cd hello-rest-master
 
+/* redis db start */
+cd db/dev && dokcer-compose up -d && cd ../..
 
+/* api server start */
+./gradlew bootJar && cd /build/libs && java -jar backend-0.0.1-SNAPSHOT.jar
 ```
